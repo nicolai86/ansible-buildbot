@@ -1,4 +1,10 @@
 ---
+- apt:
+    pkg: $item
+  with_items:
+    - python-apt
+    - python-pycurl
+
 - name: add brightbox ppa for ruby 2.0
   apt_repository:
     repo: 'ppa:brightbox/ruby-ng-experimental'
