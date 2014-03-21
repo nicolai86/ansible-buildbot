@@ -1,0 +1,17 @@
+---
+buildbot_title: Pyflakes
+buildbot_project_url: "https://nicolai86.eu"
+buildbot_user: "buildbot"
+buildbot_home: "/home/buildbot"
+buildbot_slaves:
+  - { name: "example-slave", password: "pass" }
+buildbot_slave_port: 9989
+buildbot_web_host: "localhost"
+buildbot_web_port: 8010
+buildbot_repository: "https://github.com/nicolai86/url_plumber.git"
+buildbot_branch: "master"
+buildbot_build_steps:
+  - 'ShellCommand(command=["bundle", "install"])'
+  - 'ShellCommand(command=["bundle", "exec", "rake"])'
+buildbot_basic_auth_username: pyflakes
+buildbot_basic_auth_password: pyflakes

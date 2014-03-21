@@ -1,0 +1,11 @@
+---
+- hosts: vm
+  remote_user: vagrant
+  sudo: true
+  roles:
+    -
+      role: install-ruby
+
+    -
+      role: buildbot
+      tags: test
