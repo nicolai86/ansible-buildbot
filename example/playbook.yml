@@ -7,7 +7,7 @@
       role: install-ruby
 
     -
-      role: buildbot
+      role: nicolai86.ansible-buildbot
 
     -
       role: supervisor

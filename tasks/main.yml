@@ -6,6 +6,7 @@
     update_cache: yes
   with_items:
     - python
+    - python-dev
     - git
     - python-setuptools
 
