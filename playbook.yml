@@ -8,4 +8,6 @@
 
     -
       role: buildbot
-      tags: test
+
+    -
+      role: supervisor

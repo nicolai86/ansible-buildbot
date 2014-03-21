@@ -1,0 +1,28 @@
+---
+- name: install supervisor
+  apt:
+    pkg: supervisor
+    update_cache: yes
+
+- service:
+    name: supervisor
+    state: started
+
+- name: make sure we have log directories
+  sudo_user: $buildbot_user
+  file:
+    path: "{{ buildbot_home }}/master/log"
+    state: directory
+
+- name: create buildbot slave directories
+  sudo_user: $buildbot_user
+  file:
+    path: "{{ buildbot_home }}/slaves/{{ item.name }}/log"
+    state: directory
+  with_items: $buildbot_slaves
+
+- name: supervisor templates
+  template:
+    src: supervisor.js
+    dest: /etc/supervisor/conf.d/buildbot.conf
+  notify: supervisor reload
