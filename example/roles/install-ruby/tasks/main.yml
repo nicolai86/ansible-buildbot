@@ -1,6 +1,6 @@
 ---
 - apt:
-    pkg: $item
+    pkg: "{{ item }}"
   with_items:
     - python-apt
     - python-pycurl
@@ -11,7 +11,7 @@
 
 - name: install ruby 2.0
   apt:
-    pkg: $item
+    pkg: "{{ item }}"
     state: installed
     update-cache: yes
   with_items:
