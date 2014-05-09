@@ -1,7 +1,7 @@
 ---
 - name: buildbot dependencies
   apt:
-    pkg: $item
+    pkg: "{{item}}"
     state: present
     update_cache: yes
   with_items:
@@ -12,8 +12,8 @@
 
 - name: add buildbot user
   user:
-    name: $buildbot_user
-    home: $buildbot_home
+    name: "{{buildbot_user}}"
+    home: "{{buildbot_home}}"
     shell: /bin/bash
     createhome: yes
 
@@ -35,39 +35,41 @@
 
 - name: install buildbot
   easy_install:
-    name: $item
+    name: "{{item}}"
   with_items:
     - buildbot
     - buildbot-slave
 
 - name: create buildbot master directory
-  sudo_user: $buildbot_user
+  sudo_user: "{{buildbot_user}}"
   file:
     path: "{{ buildbot_home }}/master"
     state: directory
 
 - name: create buildbot slave directories
-  sudo_user: $buildbot_user
+  sudo_user: "{{buildbot_user}}"
   file:
     path: "{{ buildbot_home }}/slaves/{{ item.name }}"
     state: directory
-  with_items: $buildbot_slaves
+  with_items:
+    - "{{buildbot_slaves}}"
 
 # master configuration
 - name: create buildbot master
-  sudo_user: $buildbot_user
+  sudo_user: "{{buildbot_user}}"
   shell: chdir={{ buildbot_home }} buildbot create-master master
 
 - name: buildbot master configuration
-  sudo_user: $buildbot_user
+  sudo_user: "{{buildbot_user}}"
   template:
     src: master.cfg.js
     dest: "{{ buildbot_home }}/master/master.cfg"
 
 - name: buildbot slave configuration
-  sudo_user: $buildbot_user
+  sudo_user: "{{buildbot_user}}"
   shell: chdir={{ buildbot_home }}/slaves/{{ item.name }} buildslave create-slave . {{ buildbot_web_host }}:{{ buildbot_slave_port }} {{ item.name }} {{ item.password }}
-  with_items: $buildbot_slaves
+  with_items:
+    - "{{buildbot_slaves}}"
 
 # buildbot start --nodaemon master
 

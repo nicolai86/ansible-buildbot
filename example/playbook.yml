@@ -3,11 +3,6 @@
   remote_user: vagrant
   sudo: true
   roles:
-    -
-      role: install-ruby
-
-    -
-      role: nicolai86.ansible-buildbot
-
-    -
-      role: supervisor
+    - install-ruby
+    - nicolai86.ansible-buildbot
+    - supervisor
