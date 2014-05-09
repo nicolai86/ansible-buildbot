@@ -9,13 +9,13 @@
     state: started
 
 - name: make sure we have log directories
-  sudo_user: "{{buildbot_user}}"
+  sudo_user: "{{ buildbot_user }}"
   file:
     path: "{{ buildbot_home }}/master/log"
     state: directory
 
 - name: create buildbot slave directories
-  sudo_user: "{{buildbot_user}}"
+  sudo_user: "{{ buildbot_user }}"
   file:
     path: "{{ buildbot_home }}/slaves/{{ item.name }}/log"
     state: directory
