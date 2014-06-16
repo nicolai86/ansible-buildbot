@@ -33,6 +33,13 @@
     insertafter: "GEM_HOME"
     state: present
 
+- lineinfile:
+    dest: "{{ buildbot_home }}/.bashrc"
+    regexp: "^export PYTHON_EGG_CACHE"
+    line: "export PYTHON_EGG_CACHE=$HOME/.egg"
+    insertafter: BOF
+    state: present
+
 - name: install buildbot
   easy_install:
     name: "{{ item }}"
@@ -51,8 +58,7 @@
   file:
     path: "{{ buildbot_home }}/slaves/{{ item.name }}"
     state: directory
-  with_items:
-    - "{{buildbot_slaves}}"
+  with_items: "{{ buildbot_slaves }}"
 
 # master configuration
 - name: create buildbot master
@@ -68,8 +74,7 @@
 - name: buildbot slave configuration
   sudo_user: "{{ buildbot_user }}"
   shell: chdir={{ buildbot_home }}/slaves/{{ item.name }} buildslave create-slave . {{ buildbot_web_host }}:{{ buildbot_slave_port }} {{ item.name }} {{ item.password }}
-  with_items:
-    - "{{buildbot_slaves}}"
+  with_items: "{{ buildbot_slaves }}"
 
 # buildbot start --nodaemon master
 

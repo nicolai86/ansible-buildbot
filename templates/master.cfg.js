@@ -96,20 +96,9 @@ c['builders'].append(
 # pushed to these targets. buildbot/status/*.py has a variety to choose from,
 # including web pages, email senders, and IRC bots.
 
+c['status'] = []
+
 from buildbot.status import html
-
-c['status'] = [
-    html.WebStatus(http_port=8011,
-        allowForce=True,
-        change_hook_dialects={
-                          'poller': {
-                              'allowed': [
-                                      "{{ buildbot_repository }}"
-                                  ]
-                              }
-                  })
-]
-
 from buildbot.status.web import authz, auth
 
 authz_cfg=authz.Authz(
