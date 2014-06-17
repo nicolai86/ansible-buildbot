@@ -58,7 +58,7 @@
   file:
     path: "{{ buildbot_home }}/slaves/{{ item.name }}"
     state: directory
-  with_items: "{{ buildbot_slaves }}"
+  with_items: "{{ buildbot_repositories }}"
 
 # master configuration
 - name: create buildbot master
@@ -73,8 +73,8 @@
 
 - name: buildbot slave configuration
   sudo_user: "{{ buildbot_user }}"
-  shell: chdir={{ buildbot_home }}/slaves/{{ item.name }} buildslave create-slave . {{ buildbot_web_host }}:{{ buildbot_slave_port }} {{ item.name }} {{ item.password }}
-  with_items: "{{ buildbot_slaves }}"
+  shell: chdir={{ buildbot_home }}/slaves/{{ item.name }} buildslave create-slave . {{ buildbot_web_host }}:{{ buildbot_slave_port }} {{ item.name }} {{ item.slave.password }}
+  with_items: "{{ buildbot_repositories }}"
 
 # buildbot start --nodaemon master
 

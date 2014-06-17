@@ -15,8 +15,8 @@ c = BuildmasterConfig = {}
 # slave name and password must be configured on the slave.
 from buildbot.buildslave import BuildSlave
 c['slaves'] = [
-    {% for slave in buildbot_slaves %}
-    BuildSlave("{{ slave.name }}", "{{ slave.password }}"),
+    {% for repository in buildbot_repositories %}
+    BuildSlave("{{ repository.name }}", "{{ repository.slave.password }}"),
     {% endfor %}
 ]
 
@@ -32,12 +32,15 @@ c['slavePortnum'] = {{ buildbot_slave_port }}
 
 from buildbot.changes.gitpoller import GitPoller
 c['change_source'] = [
+    {% for repository in buildbot_repositories %}
     GitPoller(
-        "{{ buildbot_repository }}",
+        "{{ repository.url }}",
         workdir='gitpoller-workdir',
-        branch="{{ buildbot_branch }}",
+        branch="{{ repository.branch }}",
         pollinterval=300
-    )
+    ),
+    {% endfor %}
+
 ]
 
 ####### SCHEDULERS
@@ -49,16 +52,19 @@ from buildbot.schedulers.basic import SingleBranchScheduler
 from buildbot.schedulers.forcesched import ForceScheduler
 from buildbot.changes import filter
 c['schedulers'] = [
+    {% for repository in buildbot_repositories %}
     SingleBranchScheduler(
-        name="all",
-        change_filter=filter.ChangeFilter(branch="{{ buildbot_branch }}"),
+        name="{{ repository.name }}",
+        change_filter=filter.ChangeFilter(branch="{{ repository.branch }}"),
         treeStableTimer=None,
-        builderNames=["runtests"]
+        builderNames=["runtests {{ repository.name }}"]
     ),
     ForceScheduler(
-        name="force",
-        builderNames=["runtests"]
-    )
+        name="force {{ repository.name }}",
+        builderNames=["runtests {{ repository.name }}"]
+    ),
+    {% endfor %}
+
 ]
 
 ####### BUILDERS
@@ -71,24 +77,26 @@ from buildbot.process.factory import BuildFactory
 from buildbot.steps.source.git import Git
 from buildbot.steps.shell import ShellCommand
 
+from buildbot.config import BuilderConfig
+c['builders'] = []
+
+{% for repository in buildbot_repositories %}
+
 factory = BuildFactory()
-# check out the source
-factory.addStep(Git(repourl="{{ buildbot_repository }}", mode="incremental"))
-# run the tests (note that this will require that 'trial' is installed)
-{% for build_step in buildbot_build_steps %}
+
+factory.addStep(Git(repourl="{{ repository.url }}", mode="incremental"))
+
+{% for build_step in repository.build_steps %}
 factory.addStep({{ build_step }})
 {% endfor %}
 
-from buildbot.config import BuilderConfig
-
-c['builders'] = []
 c['builders'].append(
-    {% for slave in buildbot_slaves %}
-    BuilderConfig(name="runtests",
-      slavenames=["{{ slave.name }}"],
-      factory=factory),
-    {% endfor %}
+    BuilderConfig(name="runtests {{ repository.name }}",
+      slavenames=["{{ repository.name }}"],
+      factory=factory)
 )
+
+{% endfor %}
 
 ####### STATUS TARGETS
 
