@@ -121,8 +121,18 @@ c['builders'].append(
 
 c['status'] = []
 
-from buildbot.status import html
+from buildbot.status import html, mail
 from buildbot.status.web import authz, auth
+
+{% for status in buildbot_status %}
+c['status'].append(
+    {{ status.type }}({% if status.arguments is defined %}{{ status.arguments|default([])|join(',') }}, {% endif %}
+        {% for key, value in status.keyword_arguments.iteritems() %}
+            {{ key }}={{ value }},
+        {% endfor %}
+    )
+)
+{% endfor %}
 
 authz_cfg=authz.Authz(
     # change any of these to True to enable; see the manual for more

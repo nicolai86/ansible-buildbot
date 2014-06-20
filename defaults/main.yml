@@ -15,6 +15,8 @@ buildbot_generate_master_cfg: yes
 buildbot_repository: ""
 buildbot_branch: "master"
 
+buildbot_status: []
+
 buildbot_slaves: []
 
 buildbot_change_sources: []
