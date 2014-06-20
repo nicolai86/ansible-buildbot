@@ -127,9 +127,11 @@ from buildbot.status.web import authz, auth
 {% for status in buildbot_status %}
 c['status'].append(
     {{ status.type }}({% if status.arguments is defined %}{{ status.arguments|default([])|join(',') }}, {% endif %}
+        {% if status.keyword_arguments is defined %}
         {% for key, value in status.keyword_arguments.iteritems() %}
             {{ key }}={{ value }},
         {% endfor %}
+        {% endif %}
     )
 )
 {% endfor %}
