@@ -2,12 +2,81 @@
 - hosts: vm
   remote_user: vagrant
   sudo: true
+  vars:
+    buildbot_user: buildbot
+
+    buildbot_title: Example
+    buildbot_project_url: "http://blog.nicolai86.eu"
+    buildbot_home: "/home/buildbot"
+    buildbot_web_host: "localhost"
+    buildbot_web_port: 8010
+    buildbot_slave_port: 9989
+    buildbot_generate_master_cfg: yes
+
+    buildbot_slaves:
+      -
+        name: example-slave
+        password: example
+        env:
+          -
+            name: GEM_HOME
+            value: "{{ buildbot_home }}/.gem"
+
+    buildbot_change_sources:
+      -
+        type: GitPoller
+        keyword_arguments:
+          repourl: "'https://github.com/nicolai86/url_plumber.git'"
+          workdir: "'gitpoller'"
+          branches: True
+          pollInterval: 300
+          project: "'ruby.example'"
+          pollAtLaunch: True
+
+    buildbot_schedulers:
+      -
+        type: ForceScheduler
+        keyword_arguments:
+          name: "'force api build'"
+          builderNames: "['builder']"
+
+      -
+        type: AnyBranchScheduler
+        arguments:
+          - "'schedule frontend builds'"
+        keyword_arguments:
+          change_filter: "filter.ChangeFilter(project=['ruby.example'])"
+          treeStableTimer: 300
+          builderNames: "['builder']"
+
+      -
+        type: Nightly
+        keyword_arguments:
+          name: "'daily checkup'"
+          branch: None
+          builderNames: "['builder']"
+          hour: 3
+          minute: 0
+
+    buildbot_builders:
+      -
+        name: "builder"
+        url: "https://github.com/nicolai86/url_plumber.git"
+        slave_names:
+          - example-slave
+        build_steps:
+          - 'ShellCommand(name="bundle lib", command=["bundle", "install"])'
+          - 'ShellCommand(name="test lib", command=["bundle", "exec", "rake"])'
+
+    buildbot_basic_auth_username: pyflakes
+    buildbot_basic_auth_password: pyflakes
+
   roles:
     -
       role: install-ruby
 
     -
-      role: nicolai86.ansible-buildbot
+      role: nicolai86.buildbot
 
     -
       role: supervisor

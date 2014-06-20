@@ -31,35 +31,45 @@ c['slavePortnum'] = {{ buildbot_slave_port }}
 # about source code changes.
 
 from buildbot.changes.gitpoller import GitPoller
-c['change_source'] = [
-    GitPoller(
-        "{{ buildbot_repository }}",
-        workdir='gitpoller-workdir',
-        branch="{{ buildbot_branch }}",
-        pollinterval=300
+from twisted.internet import utils
+import os
+
+c['change_source'] = []
+
+{% for change_source in buildbot_change_sources %}
+
+c['change_source'].append(
+    {{ change_source.type }}(
+        {% for key, value in change_source.keyword_arguments.iteritems() %}
+            {{ key }}={{ value }},
+        {% endfor %}
     )
-]
+)
+
+{% endfor %}
 
 ####### SCHEDULERS
 
-# Configure the Schedulers, which decide how to react to incoming changes.  In this
-# case, just kick off a 'runtests' build
-
-from buildbot.schedulers.basic import SingleBranchScheduler
+from buildbot.schedulers.basic import *
 from buildbot.schedulers.forcesched import ForceScheduler
+from buildbot.schedulers.timed import Nightly
+
 from buildbot.changes import filter
-c['schedulers'] = [
-    SingleBranchScheduler(
-        name="all",
-        change_filter=filter.ChangeFilter(branch="{{ buildbot_branch }}"),
-        treeStableTimer=None,
-        builderNames=["runtests"]
-    ),
-    ForceScheduler(
-        name="force",
-        builderNames=["runtests"]
+
+
+c['schedulers'] = []
+
+{% for scheduler in buildbot_schedulers %}
+
+c['schedulers'].append(
+    {{ scheduler.type }}( {% if scheduler.arguments is defined %}{{ scheduler.arguments|default([])|join(',') }}, {% endif %}
+    {% for key, value in scheduler.keyword_arguments.iteritems() %}
+        {{ key }}={{ value }},
+    {% endfor %}
     )
-]
+)
+
+{% endfor %}
 
 ####### BUILDERS
 
@@ -70,25 +80,30 @@ c['schedulers'] = [
 from buildbot.process.factory import BuildFactory
 from buildbot.steps.source.git import Git
 from buildbot.steps.shell import ShellCommand
+from buildbot.steps.transfer import FileUpload
+from buildbot.steps.transfer import FileDownload
+
+from buildbot.config import BuilderConfig
+c['builders'] = []
+
+{% for builder in buildbot_builders %}
 
 factory = BuildFactory()
-# check out the source
-factory.addStep(Git(repourl="{{ buildbot_repository }}", mode="incremental"))
-# run the tests (note that this will require that 'trial' is installed)
-{% for build_step in buildbot_build_steps %}
+factory.addStep(Git(repourl="{{ builder.url }}", mode="incremental"))
+
+{% for build_step in builder.build_steps %}
 factory.addStep({{ build_step }})
 {% endfor %}
 
-from buildbot.config import BuilderConfig
-
-c['builders'] = []
 c['builders'].append(
-    {% for slave in buildbot_slaves %}
-    BuilderConfig(name="runtests",
-      slavenames=["{{ slave.name }}"],
-      factory=factory),
-    {% endfor %}
+  BuilderConfig(
+    name="{{ builder.name }}",
+    slavenames=["{{ builder.slave_names|join('","') }}"],
+    factory=factory
+  )
 )
+
+{% endfor %}
 
 ####### STATUS TARGETS
 
@@ -96,20 +111,9 @@ c['builders'].append(
 # pushed to these targets. buildbot/status/*.py has a variety to choose from,
 # including web pages, email senders, and IRC bots.
 
+c['status'] = []
+
 from buildbot.status import html
-
-c['status'] = [
-    html.WebStatus(http_port=8011,
-        allowForce=True,
-        change_hook_dialects={
-                          'poller': {
-                              'allowed': [
-                                      "{{ buildbot_repository }}"
-                                  ]
-                              }
-                  })
-]
-
 from buildbot.status.web import authz, auth
 
 authz_cfg=authz.Authz(

@@ -4,6 +4,7 @@
   with_items:
     - python-apt
     - python-pycurl
+    - build-essential
 
 - name: add brightbox ppa for ruby 2.0
   apt_repository:
