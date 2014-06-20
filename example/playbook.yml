@@ -17,6 +17,9 @@
       -
         name: example-slave
         password: example
+        info:
+          admin: example admin
+          host: example host
         env:
           -
             name: GEM_HOME

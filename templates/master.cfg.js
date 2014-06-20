@@ -137,7 +137,10 @@ c['status'].append(
 authz_cfg=authz.Authz(
     # change any of these to True to enable; see the manual for more
     # options
+    {% if buildbot_basic_auth %}
     auth=auth.BasicAuth([("{{ buildbot_basic_auth_username }}","{{ buildbot_basic_auth_password }}")]),
+    {% endif %}
+
     gracefulShutdown = False,
     forceBuild = 'auth', # use this to test your slave once it is set up
     forceAllBuilds = False,
