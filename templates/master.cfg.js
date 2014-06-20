@@ -14,11 +14,19 @@ c = BuildmasterConfig = {}
 # a BuildSlave object, specifying a unique slave name and password.  The same
 # slave name and password must be configured on the slave.
 from buildbot.buildslave import BuildSlave
-c['slaves'] = [
-    {% for slave in buildbot_slaves %}
-    BuildSlave("{{ slave.name }}", "{{ slave.password }}"),
-    {% endfor %}
-]
+c['slaves'] = []
+
+{% for slave in buildbot_slaves %}
+c['slaves'].append(
+    BuildSlave("{{ slave.name }}", "{{ slave.password }}",
+        {% if slave.keyword_arguments is defined %}
+        {% for key, value in slave.keyword_arguments.iteritems() %}
+            {{ key }}={{ value }},
+        {% endfor %}
+        {% endif %}
+    )
+)
+{% endfor %}
 
 # 'slavePortnum' defines the TCP port to listen on for connections from slaves.
 # This must match the value configured into the buildslaves (with their
