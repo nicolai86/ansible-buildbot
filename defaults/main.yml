@@ -12,6 +12,7 @@ buildbot_basic_auth_password: pyflakes
 buildbot_basic_auth: yes
 
 buildbot_generate_master_cfg: yes
+buildbot_template_master_cfg: master.cfg.js
 
 buildbot_repository: ""
 buildbot_branch: "master"
