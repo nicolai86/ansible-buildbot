@@ -80,6 +80,6 @@
 
     -
       role: nicolai86.buildbot
-
+      tags: buildbot
     -
       role: supervisor

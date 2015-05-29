@@ -74,3 +74,16 @@
     dest: "{{ buildbot_home }}/slaves/{{ item.name }}/info/host"
   with_items: "{{ buildbot_slaves }}"
   when: "item.info is defined and item.info.host is defined"
+
+# master service
+- name: buildbot service
+  template:
+    src: buildbot-master.sh.j2
+    dest: /etc/init.d/buildbot-master
+    mode: 755
+
+- shell: update-rc.d buildbot-master defaults
+
+- service:
+    name: buildbot-master
+    state: restarted
